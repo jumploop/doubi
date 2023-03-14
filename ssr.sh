@@ -1549,6 +1549,6 @@ case "$num" in
   Install_kernel_start_BBR
   ;;
 *)
-  echo -e "${Error} 请输入正确的数字 [1-15]"
+  echo -e "${Error} 请输入正确的数字 [1-16]"
   ;;
 esac
