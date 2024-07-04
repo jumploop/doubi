@@ -234,7 +234,7 @@ Set_server() {
 	echo -e "请输入 SSRStatus 网站要设置的 域名[server]
 默认为本机IP为域名，例如输入: toyoo.ml，如果要使用本机IP，请留空直接回车"
 	read -erp "(默认: 本机IP):" server_s
-	[[ -z "$server_s" ]] && server_s=$(ifconfig eth0 | sed -n -r 's#^.*inet(.*) netmask.*#\1#gp')
+	[[ -z "$server_s" ]] && server_s=""
 
 	echo && echo -e "	IP/域名[server]: ${Red_background_prefix} ${server_s} ${Font_color_suffix}" && echo
 }
