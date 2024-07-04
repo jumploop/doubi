@@ -12,7 +12,7 @@ export PATH
 
 sh_ver="1.0.15"
 filepath=$(
-	cd "$(dirname "$0")"
+	cd "$(dirname "$0")" || exit
 	pwd
 )
 file_1=$(echo -e "${filepath}" | awk -F "$0" '{print $1}')
@@ -35,17 +35,17 @@ Tip="${Green_font_prefix}[注意]${Font_color_suffix}"
 check_sys() {
 	if [[ -f /etc/redhat-release ]]; then
 		release="centos"
-	elif cat /etc/issue | grep -q -E -i "debian"; then
+	elif grep -q -E -i "debian" /etc/issue; then
 		release="debian"
-	elif cat /etc/issue | grep -q -E -i "ubuntu"; then
+	elif grep -q -E -i "ubuntu" /etc/issue; then
 		release="ubuntu"
-	elif cat /etc/issue | grep -q -E -i "centos|red hat|redhat"; then
+	elif grep -q -E -i "centos|red hat|redhat" /etc/issue; then
 		release="centos"
-	elif cat /proc/version | grep -q -E -i "debian"; then
+	elif grep -q -E -i "debian" /proc/version; then
 		release="debian"
-	elif cat /proc/version | grep -q -E -i "ubuntu"; then
+	elif grep -q -E -i "ubuntu" /proc/version; then
 		release="ubuntu"
-	elif cat /proc/version | grep -q -E -i "centos|red hat|redhat"; then
+	elif grep -q -E -i "centos|red hat|redhat" /proc/version; then
 		release="centos"
 	fi
 	bit=$(uname -m)
@@ -168,32 +168,32 @@ Installation_dependency() {
 	if [[ ${mode} == "server" ]]; then
 		python_status=$(python --help)
 		if [[ ${release} == "centos" ]]; then
-			yum update
+			yum update -y
 			if [[ -z ${python_status} ]]; then
-				yum install -y python unzip vim make
+				yum install -y python unzip vim make iptables-services
 				yum groupinstall "Development Tools" -y
 			else
-				yum install -y unzip vim make
+				yum install -y unzip vim make iptables-services
 				yum groupinstall "Development Tools" -y
 			fi
 		else
-			apt-get update
+			apt-get update -y
 			if [[ -z ${python_status} ]]; then
-				apt-get install -y python unzip vim build-essential make
+				apt-get install -y python unzip vim build-essential make iptables-services
 			else
-				apt-get install -y unzip vim build-essential make
+				apt-get install -y unzip vim build-essential make iptables-services
 			fi
 		fi
 	else
 		python_status=$(python --help)
 		if [[ ${release} == "centos" ]]; then
 			if [[ -z ${python_status} ]]; then
-				yum update
+				yum update -y
 				yum install -y python
 			fi
 		else
 			if [[ -z ${python_status} ]]; then
-				apt-get update
+				apt-get update -y
 				apt-get install -y python
 			fi
 		fi
@@ -226,11 +226,11 @@ Read_config_client() {
 		if [[ ! -e "${file}/status-client.py" ]]; then
 			echo -e "${Error} ServerStatus 客户端文件不存在 !" && exit 1
 		else
-			client_text="$(cat "${file}/status-client.py" | sed 's/\"//g;s/,//g;s/ //g')"
+			client_text="$(sed 's/\"//g;s/,//g;s/ //g' "${file}/status-client.py")"
 			rm -rf "${file}/status-client.py"
 		fi
 	else
-		client_text="$(cat "${client_file}/status-client.py" | sed 's/\"//g;s/,//g;s/ //g')"
+		client_text="$(sed 's/\"//g;s/,//g;s/ //g' "${client_file}/status-client.py")"
 	fi
 	client_server="$(echo -e "${client_text}" | grep "SERVER=" | awk -F "=" '{print $2}')"
 	client_port="$(echo -e "${client_text}" | grep "PORT=" | awk -F "=" '{print $2}')"
@@ -243,7 +243,7 @@ Read_config_server() {
 		Write_server_config_conf
 		server_port="35601"
 	else
-		server_port="$(cat "${server_conf_1}" | grep "PORT = " | awk '{print $3}')"
+		server_port="$(grep "PORT = " "${server_conf_1}" | awk '{print $3}')"
 	fi
 }
 Set_server() {
@@ -423,7 +423,7 @@ List_ServerStatus_server() {
 	[[ ${conf_text_total} = "0" ]] && echo -e "${Error} 没有发现 一个节点配置，请检查 !" && exit 1
 	conf_text_total_a=$(echo $((conf_text_total - 1)))
 	conf_list_all=""
-	for ((integer = 0; integer <= ${conf_text_total_a}; integer++)); do
+	for ((integer = 0; integer <= conf_text_total_a; integer++)); do
 		now_text=$(${jq_file} '.servers' ${server_conf} | ${jq_file} ".[${integer}]" | sed 's/\"//g;s/,$//g' | sed '$d;1d')
 		now_text_username=$(echo -e "${now_text}" | grep "username" | awk -F ": " '{print $2}')
 		now_text_password=$(echo -e "${now_text}" | grep "password" | awk -F ": " '{print $2}')
@@ -469,7 +469,7 @@ Del_ServerStatus_server() {
 		del_username_max_text=$(sed -n "${del_username_max}p" ${server_conf})
 		del_username_max_text_last=$(echo ${del_username_max_text:((${#del_username_max_text} - 1))})
 		if [[ ${del_username_max_text_last} != "," ]]; then
-			del_list_num=$(echo $((${del_username_min} - 1)))
+			del_list_num=$((del_username_min - 1))
 			sed -i "${del_list_num}s/,$//g" ${server_conf}
 		fi
 		sed -i "${del_username_min},${del_username_max}d" ${server_conf}
@@ -502,7 +502,7 @@ Modify_ServerStatus_server_password() {
 	Set_username_num=$(cat -n ${server_conf} | grep '"username": "'"${manually_username}"'"' | awk '{print $1}')
 	if [[ -n ${Set_username_num} ]]; then
 		Set_password
-		Set_password_num_a=$(echo $((${Set_username_num} + 1)))
+		Set_password_num_a=$((Set_username_num + 1))
 		Set_password_num_text=$(sed -n "${Set_password_num_a}p" ${server_conf} | sed 's/\"//g;s/,$//g' | awk -F ": " '{print $2}')
 		sed -i "${Set_password_num_a}"'s/"password": "'"${Set_password_num_text}"'"/"password": "'"${password_s}"'"/g' ${server_conf}
 		echo -e "${Info} 修改成功 [ 原节点密码: ${Set_password_num_text}, 新节点密码: ${password_s} ]"
@@ -518,7 +518,7 @@ Modify_ServerStatus_server_name() {
 	Set_username_num=$(cat -n ${server_conf} | grep '"username": "'"${manually_username}"'"' | awk '{print $1}')
 	if [[ -n ${Set_username_num} ]]; then
 		Set_name
-		Set_name_num_a=$(echo $((${Set_username_num} + 2)))
+		Set_name_num_a=$((Set_username_num + 2))
 		Set_name_num_a_text=$(sed -n "${Set_name_num_a}p" ${server_conf} | sed 's/\"//g;s/,$//g' | awk -F ": " '{print $2}')
 		sed -i "${Set_name_num_a}"'s/"name": "'"${Set_name_num_a_text}"'"/"name": "'"${name_s}"'"/g' ${server_conf}
 		echo -e "${Info} 修改成功 [ 原节点名称: ${Set_name_num_a_text}, 新节点名称: ${name_s} ]"
@@ -534,7 +534,7 @@ Modify_ServerStatus_server_type() {
 	Set_username_num=$(cat -n ${server_conf} | grep '"username": "'"${manually_username}"'"' | awk '{print $1}')
 	if [[ -n ${Set_username_num} ]]; then
 		Set_type
-		Set_type_num_a=$(echo $((${Set_username_num} + 3)))
+		Set_type_num_a=$((Set_username_num + 3))
 		Set_type_num_a_text=$(sed -n "${Set_type_num_a}p" ${server_conf} | sed 's/\"//g;s/,$//g' | awk -F ": " '{print $2}')
 		sed -i "${Set_type_num_a}"'s/"type": "'"${Set_type_num_a_text}"'"/"type": "'"${type_s}"'"/g' ${server_conf}
 		echo -e "${Info} 修改成功 [ 原节点虚拟化: ${Set_type_num_a_text}, 新节点虚拟化: ${type_s} ]"
@@ -550,7 +550,7 @@ Modify_ServerStatus_server_location() {
 	Set_username_num=$(cat -n ${server_conf} | grep '"username": "'"${manually_username}"'"' | awk '{print $1}')
 	if [[ -n ${Set_username_num} ]]; then
 		Set_location
-		Set_location_num_a=$(echo $((${Set_username_num} + 5)))
+		Set_location_num_a=$((Set_username_num + 5))
 		Set_location_num_a_text=$(sed -n "${Set_location_num_a}p" ${server_conf} | sed 's/\"//g;s/,$//g' | awk -F ": " '{print $2}')
 		sed -i "${Set_location_num_a}"'s/"location": "'"${Set_location_num_a_text}"'"/"location": "'"${location_s}"'"/g' ${server_conf}
 		echo -e "${Info} 修改成功 [ 原节点位置: ${Set_location_num_a_text}, 新节点位置: ${location_s} ]"
@@ -571,16 +571,16 @@ Modify_ServerStatus_server_all() {
 		Set_type
 		Set_location
 		sed -i "${Set_username_num}"'s/"username": "'"${manually_username}"'"/"username": "'"${username_s}"'"/g' ${server_conf}
-		Set_password_num_a=$(echo $((${Set_username_num} + 1)))
+		Set_password_num_a=$((Set_username_num + 1))
 		Set_password_num_text=$(sed -n "${Set_password_num_a}p" ${server_conf} | sed 's/\"//g;s/,$//g' | awk -F ": " '{print $2}')
 		sed -i "${Set_password_num_a}"'s/"password": "'"${Set_password_num_text}"'"/"password": "'"${password_s}"'"/g' ${server_conf}
-		Set_name_num_a=$(echo $((${Set_username_num} + 2)))
+		Set_name_num_a=$((Set_username_num + 2))
 		Set_name_num_a_text=$(sed -n "${Set_name_num_a}p" ${server_conf} | sed 's/\"//g;s/,$//g' | awk -F ": " '{print $2}')
 		sed -i "${Set_name_num_a}"'s/"name": "'"${Set_name_num_a_text}"'"/"name": "'"${name_s}"'"/g' ${server_conf}
-		Set_type_num_a=$(echo $((${Set_username_num} + 3)))
+		Set_type_num_a=$((Set_username_num + 3))
 		Set_type_num_a_text=$(sed -n "${Set_type_num_a}p" ${server_conf} | sed 's/\"//g;s/,$//g' | awk -F ": " '{print $2}')
 		sed -i "${Set_type_num_a}"'s/"type": "'"${Set_type_num_a_text}"'"/"type": "'"${type_s}"'"/g' ${server_conf}
-		Set_location_num_a=$(echo $((${Set_username_num} + 5)))
+		Set_location_num_a=$((Set_username_num + 5))
 		Set_location_num_a_text=$(sed -n "${Set_location_num_a}p" ${server_conf} | sed 's/\"//g;s/,$//g' | awk -F ": " '{print $2}')
 		sed -i "${Set_location_num_a}"'s/"location": "'"${Set_location_num_a_text}"'"/"location": "'"${location_s}"'"/g' ${server_conf}
 		echo -e "${Info} 修改成功。"
@@ -595,7 +595,7 @@ Modify_ServerStatus_server_disabled() {
 	[[ -z "${manually_username}" ]] && echo -e "已取消..." && exit 1
 	Set_username_num=$(cat -n ${server_conf} | grep '"username": "'"${manually_username}"'"' | awk '{print $1}')
 	if [[ -n ${Set_username_num} ]]; then
-		Set_disabled_num_a=$(echo $((${Set_username_num} + 6)))
+		Set_disabled_num_a=$((Set_username_num + 6))
 		Set_disabled_num_a_text=$(sed -n "${Set_disabled_num_a}p" ${server_conf} | sed 's/\"//g;s/,$//g' | awk -F ": " '{print $2}')
 		if [[ ${Set_disabled_num_a_text} == "false" ]]; then
 			disabled_s="true"
@@ -650,7 +650,7 @@ Install_caddy() {
 			chmod +x caddy_install.sh
 			bash caddy_install.sh install
 			rm -rf caddy_install.sh
-			[[ ! -e "/usr/local/caddy/caddy" ]] && echo -e "${Error} Caddy安装失败，请手动部署，Web网页文件位置：${Web_file}" && exit 1
+			[[ ! -e "/usr/local/caddy/caddy" ]] && echo -e "${Error} Caddy安装失败，请手动部署，Web网页文件位置：${web_file}" && exit 1
 		else
 			echo -e "${Info} 发现Caddy已安装，开始配置..."
 		fi
@@ -754,11 +754,11 @@ Update_ServerStatus_client() {
 		if [[ ! -e "${file}/status-client.py" ]]; then
 			echo -e "${Error} ServerStatus 客户端文件不存在 !" && exit 1
 		else
-			client_text="$(cat "${file}/status-client.py" | sed 's/\"//g;s/,//g;s/ //g')"
+			client_text="$(sed 's/\"//g;s/,//g;s/ //g' "${file}/status-client.py")"
 			rm -rf "${file}/status-client.py"
 		fi
 	else
-		client_text="$(cat "${client_file}/status-client.py" | sed 's/\"//g;s/,//g;s/ //g')"
+		client_text="$(sed 's/\"//g;s/,//g;s/ //g' "${client_file}/status-client.py")"
 	fi
 	server_s="$(echo -e "${client_text}" | grep "SERVER=" | awk -F "=" '{print $2}')"
 	server_port_s="$(echo -e "${client_text}" | grep "PORT=" | awk -F "=" '{print $2}')"
@@ -797,7 +797,7 @@ Uninstall_ServerStatus_server() {
 	[[ -z ${unyn} ]] && unyn="n"
 	if [[ ${unyn} == [Yy] ]]; then
 		check_pid_server
-		[[ -n $PID ]] && kill -9 ${PID}
+		[[ -n $PID ]] && kill -9 "${PID}"
 		Read_config_server
 		Del_iptables "${server_port}"
 		Save_iptables
@@ -851,7 +851,7 @@ Uninstall_ServerStatus_client() {
 	[[ -z ${unyn} ]] && unyn="n"
 	if [[ ${unyn} == [Yy] ]]; then
 		check_pid_client
-		[[ -n $PID ]] && kill -9 ${PID}
+		[[ -n $PID ]] && kill -9 "${PID}"
 		Read_config_client
 		Del_iptables_OUT "${client_port}"
 		Save_iptables
@@ -890,9 +890,9 @@ View_client_Log() {
 	tail -f ${client_log_file}
 }
 View_server_Log() {
-	[[ ! -e ${erver_log_file} ]] && echo -e "${Error} 没有找到日志文件 !" && exit 1
+	[[ ! -e ${server_log_file} ]] && echo -e "${Error} 没有找到日志文件 !" && exit 1
 	echo && echo -e "${Tip} 按 ${Red_font_prefix}Ctrl+C${Font_color_suffix} 终止查看日志" && echo -e "如果需要查看完整日志内容，请用 ${Red_font_prefix}cat ${erver_log_file}${Font_color_suffix} 命令。" && echo
-	tail -f "${erver_log_file}"
+	tail -f "${server_log_file}"
 }
 Add_iptables_OUT() {
 	iptables_ADD_OUT_port=$1
