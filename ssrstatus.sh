@@ -692,11 +692,11 @@ Modify_SSRStatus_disabled() {
 Installation_dependency() {
 	if [[ ${release} == "centos" ]]; then
 		yum update -y
-		yum install -y unzip vim curl crond
+		yum install -y unzip vim curl crond iptables-services
 		[[ -z $(ls /usr/sbin/crond) ]] && echo -e "${Error} 依赖 crond 安装失败..." && exit 0
 	else
 		apt-get update -y
-		apt-get install -y unzip vim curl cron
+		apt-get install -y unzip vim curl cron iptables-services
 		[[ -z $(ls /usr/sbin/cron) ]] && echo -e "${Error} 依赖 cron 安装失败..." && exit 0
 	fi
 	[[ -z $(unzip --help) ]] && echo -e "${Error} 依赖 unzip 安装失败..." && exit 0
