@@ -721,9 +721,9 @@ Install_caddy() {
 		if [[ ! -s "/usr/local/caddy/Caddyfile" ]]; then
 			cat >"/usr/local/caddy/Caddyfile" <<-EOF
 				http://${server_s}:${server_port_s} {
-				 root ${Web_file}
-				 timeouts none
-				 gzip
+				root * ${Web_file}
+				file_server
+				encode gzip
 				}
 			EOF
 			/etc/init.d/caddy restart
@@ -731,9 +731,9 @@ Install_caddy() {
 			echo -e "${Info} 发现 Caddy 配置文件非空，开始追加 ServerStatus 网站配置内容到文件最后..."
 			cat >>"/usr/local/caddy/Caddyfile" <<-EOF
 				http://${server_s}:${server_port_s} {
-				 root ${Web_file}
-				 timeouts none
-				 gzip
+				root * ${Web_file}
+				file_server
+				encode gzip
 				}
 			EOF
 			/etc/init.d/caddy restart
