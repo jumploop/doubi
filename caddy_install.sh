@@ -43,21 +43,25 @@ Download_caddy() {
 	PID=$(ps -ef | grep "caddy" | grep -v "grep" | grep -v "init.d" | grep -v "service" | grep -v "caddy_install" | awk '{print $2}')
 	[[ -n ${PID} ]] && kill -9 "${PID}"
 	[[ -e "caddy*" ]] && rm -rf "caddy*"
+
+	if [[ -n ${extension} ]]; then
+		extension_all="&p=${extension}"
+	else
+		extension_all=""
+	fi
+
 	if [[ ${bit} == "x86_64" ]]; then
-		wget --no-check-certificate -O "caddy_linux.tar.gz" "https://github.com/caddyserver/caddy/releases/download/v2.8.4/caddy_2.8.4_linux_amd64.tar.gz"
+		wget --no-check-certificate -O "caddy" "https://caddyserver.com/api/download?os=linux&arch=amd64${extension_all}"
 	elif [[ ${bit} == "i386" || ${bit} == "i686" ]]; then
-		wget --no-check-certificate -O "caddy_linux.tar.gz" "https://github.com/caddyserver/caddy/releases/download/v2.8.4/caddy_2.8.4_linux_s390x.tar.gz"
+		wget --no-check-certificate -O "caddy" "https://caddyserver.com/api/downloados=linux&arch=s390x${extension_all}"
 	elif [[ ${bit} == "armv7l" ]]; then
-		wget --no-check-certificate -O "caddy_linux.tar.gz" "https://github.com/caddyserver/caddy/releases/download/v2.8.4/caddy_2.8.4_linux_armv7.tar.gz"
+		wget --no-check-certificate -O "caddy" "https://caddyserver.com/api/downloados=linux&arch=arm&arm=7${extension_all}"
 	elif [[ ${bit} == "arm64" || ${bit} == "aarch64" ]]; then
-		wget --no-check-certificate -O "caddy_linux.tar.gz" "https://github.com/caddyserver/caddy/releases/download/v2.8.4/caddy_2.8.4_linux_arm64.tar.gz"
+		wget --no-check-certificate -O "caddy" "https://caddyserver.com/api/downloados=linux&arch=arm64${extension_all}"
 	else
 		echo -e "${Error_font_prefix}[错误]${Font_suffix} 不支持 [${bit}] ! 请向本站反馈[]中的名称，我会看看是否可以添加支持。" && exit 1
 	fi
-	[[ ! -e "caddy_linux.tar.gz" ]] && echo -e "${Error_font_prefix}[错误]${Font_suffix} Caddy 下载失败 !" && exit 1
-	tar zxf "caddy_linux.tar.gz"
-	rm -rf "caddy_linux.tar.gz"
-	[[ ! -e ${caddy_file} ]] && echo -e "${Error_font_prefix}[错误]${Font_suffix} Caddy 解压失败或压缩文件错误 !" && exit 1
+	[[ ! -e "caddy" ]] && echo -e "${Error_font_prefix}[错误]${Font_suffix} Caddy 下载失败 !" && exit 1
 	chmod +x caddy
 }
 Service_caddy() {
@@ -119,7 +123,7 @@ uninstall_caddy() {
 }
 check_sys
 action=$1
-#extension=$2
+extension=$2
 [[ -z $1 ]] && action=install
 case "$action" in
 install | uninstall)
