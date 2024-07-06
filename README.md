@@ -80,10 +80,12 @@
       - [下载安装:](#下载安装-29)
   - [ssr\_ip\_check.sh](#ssr_ip_checksh)
       - [下载安装:](#下载安装-30)
-  - [~~pipes.sh~~](#pipessh)
+  - [vpstest.sh](#vpstestsh)
       - [下载安装:](#下载安装-31)
-  - [~~gogo.sh~~](#gogosh)
+  - [~~pipes.sh~~](#pipessh)
       - [下载安装:](#下载安装-32)
+  - [~~gogo.sh~~](#gogosh)
+      - [下载安装:](#下载安装-33)
 
 ---
 
@@ -518,6 +520,18 @@ wget -N --no-check-certificate https://raw.githubusercontent.com/jumploop/doubi/
 #### 下载安装:
 ``` bash
 wget -N --no-check-certificate https://raw.githubusercontent.com/jumploop/doubi/master/ssr_ip_check.sh && chmod +x ssr_ip_check.sh
+```
+
+
+## vpstest.sh
+
+- 脚本说明: VPS一键测试脚本，方便你更好地了解你的服务器
+- 系统支持: CentOS6+ / Debian6+ / Ubuntu14+
+- 使用方法: https://doub.io/ss-jc50/
+
+#### 下载安装:
+``` bash
+wget -N --no-check-certificate https://raw.githubusercontent.com/jumploop/doubi/master/vpstest.sh && chmod +x vpstest.sh
 ```
 
 ---
