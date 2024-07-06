@@ -658,6 +658,7 @@ Install_caddy() {
 			cat >"/usr/local/caddy/Caddyfile" <<-EOF
 				http://${server_s}:${server_http_port_s} {
 				root  * ${web_file}
+				file_server
 				encode gzip
 				}
 			EOF
@@ -667,6 +668,7 @@ Install_caddy() {
 			cat >>"/usr/local/caddy/Caddyfile" <<-EOF
 				http://${server_s}:${server_http_port_s} {
 				root * ${web_file}
+				file_server
 				encode gzip
 				}
 			EOF
