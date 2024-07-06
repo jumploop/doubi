@@ -463,7 +463,7 @@ Socks5_test() {
 	fi
 	kill -9 "${PID}"
 	PID=$(ps -ef | grep -v grep | grep "local.py" | grep "${local_port}" | awk '{print $2}')
-	if [[ ! -z ${PID} ]]; then
+	if [[ -n ${PID} ]]; then
 		echo -e "${Error} ShadowsocksR客户端 停止失败，请检查 !" | tee -a "${log_file}"
 		if [[ ${analysis_type} == "add" ]]; then
 			exit_GG
