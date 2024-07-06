@@ -72,8 +72,8 @@ get_info() {
 	ipv6=$(wget -qO- -t1 -T2 ipv6.icanhazip.com)
 	disk_size1=($(LANG=C df -ahPl | grep -wvE '\-|none|tmpfs|devtmpfs|by-uuid|chroot|Filesystem' | awk '{print $2}'))
 	disk_size2=($(LANG=C df -ahPl | grep -wvE '\-|none|tmpfs|devtmpfs|by-uuid|chroot|Filesystem' | awk '{print $3}'))
-	disk_total_size=$(calc_disk ${disk_size1[@]})
-	disk_used_size=$(calc_disk ${disk_size2[@]})
+	disk_total_size=$(calc_disk "${disk_size1[@]}")
+	disk_used_size=$(calc_disk "${disk_size2[@]}")
 }
 system_info() {
 	clear
@@ -98,12 +98,12 @@ system_info() {
 }
 calc_disk() {
 	local total_size=0
-	local array=$@
-	for size in ${array[@]}; do
-		[[ "${size}" == "0" ]] && size_t=0 || size_t=$(echo ${size:0:${#size}-1})
-		[[ "$(echo ${size:(-1)})" == "M" ]] && size=$(awk 'BEGIN{printf "%.1f", '"$size_t"' / 1024}')
-		[[ "$(echo ${size:(-1)})" == "T" ]] && size=$(awk 'BEGIN{printf "%.1f", '"$size_t"' * 1024}')
-		[[ "$(echo ${size:(-1)})" == "G" ]] && size=${size_t}
+	local array=("$@")
+	for size in "${array[@]}"; do
+		[[ "${size}" == "0" ]] && size_t=0 || size_t=${size:0:${#size}-1}
+		[[ "${size:(-1)}" == "M" ]] && size=$(awk 'BEGIN{printf "%.1f", '"$size_t"' / 1024}')
+		[[ "${size:(-1)}" == "T" ]] && size=$(awk 'BEGIN{printf "%.1f", '"$size_t"' * 1024}')
+		[[ "${size:(-1)}" == "G" ]] && size=${size_t}
 		total_size=$(awk 'BEGIN{printf "%.1f", '"$total_size"' + '"$size"'}')
 	done
 	echo "${total_size}"
@@ -121,20 +121,22 @@ io_test() {
 	echo "I/O speed(2nd run)   : $io2" | tee -a $logfile
 	io3=$($1)
 	echo "I/O speed(3rd run)   : $io3" | tee -a $logfile
-	ioraw1=$(echo $io1 | awk 'NR==1 {print $1}')
-	[[ "$(echo $io1 | awk 'NR==1 {print $2}')" == "GB/s" ]] && ioraw1=$(awk 'BEGIN{print '$ioraw1' * 1024}')
-	ioraw2=$(echo $io2 | awk 'NR==1 {print $1}')
-	[[ "$(echo $io2 | awk 'NR==1 {print $2}')" == "GB/s" ]] && ioraw2=$(awk 'BEGIN{print '$ioraw2' * 1024}')
-	ioraw3=$(echo $io3 | awk 'NR==1 {print $1}')
-	[[ "$(echo $io3 | awk 'NR==1 {print $2}')" == "GB/s" ]] && ioraw3=$(awk 'BEGIN{print '$ioraw3' * 1024}')
-	ioall=$(awk 'BEGIN{print '$ioraw1' + '$ioraw2' + '$ioraw3'}')
-	ioavg=$(awk 'BEGIN{printf "%.1f", '$ioall' / 3}')
+	ioraw1=$(echo "$io1" | awk 'NR==1 {print $1}')
+	[[ "$(echo "$io1" | awk 'NR==1 {print $2}')" == "GB/s" ]] && ioraw1=$(awk 'BEGIN{print '"$ioraw1"' * 1024}')
+	ioraw2=$(echo "$io2" | awk 'NR==1 {print $1}')
+	[[ "$(echo "$io2" | awk 'NR==1 {print $2}')" == "GB/s" ]] && ioraw2=$(awk 'BEGIN{print '"$ioraw2"' * 1024}')
+	ioraw3=$(echo "$io3" | awk 'NR==1 {print $1}')
+	[[ "$(echo "$io3" | awk 'NR==1 {print $2}')" == "GB/s" ]] && ioraw3=$(awk 'BEGIN{print '"$ioraw3"' * 1024}')
+	ioall=$(awk 'BEGIN{print '"$ioraw1"' + '"${ioraw2}"' + '"$ioraw3"'}')
+	ioavg=$(awk 'BEGIN{printf "%.1f", '"$ioall"' / 3}')
 	echo "Average I/O speed    : $ioavg MB/s" | tee -a $logfile
 	next | tee -a $logfile
 }
 speed_test() {
-	local speedtest=$(wget -4O /dev/null -T300 $1 2>&1 | awk '/\/dev\/null/ {speed=$3 $4} END {gsub(/\(|\)/,"",speed); print speed}')
-	local ipaddress=$(ping -c1 -n $(awk -F'/' '{print $3}' <<<$1) | awk -F'[()]' '{print $2;exit}')
+	local speedtest
+	speedtest=$(wget -4O /dev/null -T300 "$1" 2>&1 | awk '/\/dev\/null/ {speed=$3 $4} END {gsub(/\(|\)/,"",speed); print speed}')
+	local ipaddress
+	ipaddress=$(ping -c1 -n "$(awk -F'/' '{print $3}' <<<"$1")" | awk -F'[()]' '{print $2;exit}')
 	local nodeName=$2
 	printf "${YELLOW}%-32s${GREEN}%-24s${RED}%-14s${PLAIN}\n" "${nodeName}:" "${ipaddress}:" "${speedtest}"
 }
