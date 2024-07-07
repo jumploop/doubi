@@ -175,7 +175,7 @@ Get_User_transfer(){
 	#echo "transfer_enable_Used_2_1=${transfer_enable_Used_2_1}"
 	transfer_enable_Used_1=$(echo $((${transfer_enable_1}-${transfer_enable_Used_2_1})))
 	#echo "transfer_enable_Used_1=${transfer_enable_Used_1}"
-	
+
 	if [[ ${transfer_enable_1} -lt 1024 ]]; then
 		transfer_enable="${transfer_enable_1} B"
 	elif [[ ${transfer_enable_1} -lt 1048576 ]]; then
@@ -405,26 +405,26 @@ Set_config_password(){
 }
 Set_config_method(){
 	echo -e "请选择要设置的用户 加密方式
-	
+
  ${Green_font_prefix} 1.${Font_color_suffix} none
  ${Tip} 如果使用 auth_chain_* 系列协议，建议加密方式选择 none (该系列协议自带 RC4 加密)，混淆随意
- 
+
  ${Green_font_prefix} 2.${Font_color_suffix} rc4
  ${Green_font_prefix} 3.${Font_color_suffix} rc4-md5
  ${Green_font_prefix} 4.${Font_color_suffix} rc4-md5-6
- 
+
  ${Green_font_prefix} 5.${Font_color_suffix} aes-128-ctr
  ${Green_font_prefix} 6.${Font_color_suffix} aes-192-ctr
  ${Green_font_prefix} 7.${Font_color_suffix} aes-256-ctr
- 
+
  ${Green_font_prefix} 8.${Font_color_suffix} aes-128-cfb
  ${Green_font_prefix} 9.${Font_color_suffix} aes-192-cfb
  ${Green_font_prefix}10.${Font_color_suffix} aes-256-cfb
- 
+
  ${Green_font_prefix}11.${Font_color_suffix} aes-128-cfb8
  ${Green_font_prefix}12.${Font_color_suffix} aes-192-cfb8
  ${Green_font_prefix}13.${Font_color_suffix} aes-256-cfb8
- 
+
  ${Green_font_prefix}14.${Font_color_suffix} salsa20
  ${Green_font_prefix}15.${Font_color_suffix} chacha20
  ${Green_font_prefix}16.${Font_color_suffix} chacha20-ietf
@@ -470,7 +470,7 @@ Set_config_method(){
 }
 Set_config_protocol(){
 	echo -e "请选择要设置的用户 协议插件
-	
+
  ${Green_font_prefix}1.${Font_color_suffix} origin
  ${Green_font_prefix}2.${Font_color_suffix} auth_sha1_v4
  ${Green_font_prefix}3.${Font_color_suffix} auth_aes128_md5
@@ -507,7 +507,7 @@ Set_config_protocol(){
 }
 Set_config_obfs(){
 	echo -e "请选择要设置的用户 混淆插件
-	
+
  ${Green_font_prefix}1.${Font_color_suffix} plain
  ${Green_font_prefix}2.${Font_color_suffix} http_simple
  ${Green_font_prefix}3.${Font_color_suffix} http_post
@@ -662,7 +662,7 @@ Set_config_enable(){
 	elif [[ "${enable}" == "0" ]]; then
 		echo -e "端口 [${ssr_port}] 的账号状态为：${Green_font_prefix}禁用${Font_color_suffix} , 是否切换为 ${Red_font_prefix}启用${Font_color_suffix} ?[Y/n]"
 		read -e -p "(默认: Y):" ssr_enable_yn
-		[[ -z "${ssr_enable_yn}" ]] && ssr_enable_yn = "y"
+		[[ -z "${ssr_enable_yn}" ]] && ssr_enable_yn="y"
 		if [[ "${ssr_enable_yn}" == [Yy] ]]; then
 			ssr_enable="1"
 		else
@@ -905,7 +905,7 @@ JQ_install(){
 		fi
 		[[ ! -e ${jq_file} ]] && echo -e "${Error} JQ解析器 重命名失败，请检查 !" && exit 1
 		chmod +x ${jq_file}
-		echo -e "${Info} JQ解析器 安装完成，继续..." 
+		echo -e "${Info} JQ解析器 安装完成，继续..."
 	else
 		echo -e "${Info} JQ解析器 已安装，继续..."
 	fi
@@ -1176,7 +1176,7 @@ Modify_Config(){
  ${Green_font_prefix}12.${Font_color_suffix} 修改 全部配置
 ————— 其他 —————
  ${Green_font_prefix}13.${Font_color_suffix} 修改 用户配置中显示的IP或域名
- 
+
  ${Tip} 用户的用户名和端口是无法修改，如果需要修改请使用脚本的 手动修改功能 !" && echo
 	read -e -p "(默认: 取消):" ssr_modify
 	[[ -z "${ssr_modify}" ]] && echo "已取消..." && exit 1
@@ -1374,7 +1374,7 @@ Clear_transfer_one(){
 	done
 }
 Clear_transfer_all(){
-	cd "${ssr_folder}"
+	cd "${ssr_folder}" || exit
 	user_info=$(python mujson_mgr.py -l)
 	user_total=$(echo "${user_info}"|wc -l)
 	[[ -z ${user_info} ]] && echo -e "${Error} 没有发现 用户，请检查 !" && exit 1
@@ -1466,7 +1466,7 @@ Configure_Server_Speeder(){
  ${Green_font_prefix}4.${Font_color_suffix} 停止 锐速
  ${Green_font_prefix}5.${Font_color_suffix} 重启 锐速
  ${Green_font_prefix}6.${Font_color_suffix} 查看 锐速 状态
- 
+
  注意： 锐速和LotServer不能同时安装/启动！" && echo
 	read -e -p "(默认: 取消):" server_speeder_num
 	[[ -z "${server_speeder_num}" ]] && echo "已取消..." && exit 1
@@ -1500,8 +1500,8 @@ Install_ServerSpeeder(){
 	[[ ! -e "/tmp/serverspeeder.sh" ]] && echo -e "${Error} 锐速安装脚本下载失败 !" && exit 1
 	bash /tmp/serverspeeder.sh
 	sleep 2s
-	PID=`ps -ef |grep -v grep |grep "serverspeeder" |awk '{print $2}'`
-	if [[ ! -z ${PID} ]]; then
+	PID=$(ps -ef |grep -v grep |grep "serverspeeder" |awk '{print $2}')
+	if [[  -n ${PID} ]]; then
 		rm -rf /tmp/serverspeeder.sh
 		rm -rf /tmp/91yunserverspeeder
 		rm -rf /tmp/91yunserverspeeder.tar.gz
@@ -1530,7 +1530,7 @@ Configure_LotServer(){
  ${Green_font_prefix}4.${Font_color_suffix} 停止 LotServer
  ${Green_font_prefix}5.${Font_color_suffix} 重启 LotServer
  ${Green_font_prefix}6.${Font_color_suffix} 查看 LotServer 状态
- 
+
  注意： 锐速和LotServer不能同时安装/启动！" && echo
 	read -e -p "(默认: 取消):" lotserver_num
 	[[ -z "${lotserver_num}" ]] && echo "已取消..." && exit 1
@@ -1583,7 +1583,7 @@ Uninstall_LotServer(){
 # BBR
 Configure_BBR(){
 	echo && echo -e "  你要做什么？
-	
+
  ${Green_font_prefix}1.${Font_color_suffix} 安装 BBR
 ————————
  ${Green_font_prefix}2.${Font_color_suffix} 启动 BBR
@@ -1627,7 +1627,7 @@ Status_BBR(){
 # 其他功能
 Other_functions(){
 	echo && echo -e "  你要做什么？
-	
+
   ${Green_font_prefix}1.${Font_color_suffix} 配置 BBR
   ${Green_font_prefix}2.${Font_color_suffix} 配置 锐速(ServerSpeeder)
   ${Green_font_prefix}3.${Font_color_suffix} 配置 LotServer(锐速母公司)
@@ -1775,7 +1775,7 @@ Update_Shell(){
 		rm -rf /etc/init.d/ssrmu
 		Service_SSR
 	fi
-	cd "${file}"
+	cd "${file}" || exit
 	wget -N --no-check-certificate "https://raw.githubusercontent.com/ToyoDAdoubiBackup/doubi/master/ssrmu.sh" && chmod +x ssrmu.sh
 	echo -e "脚本已更新为最新版本[ ${sh_new_ver} ] !(注意：因为更新方式为直接覆盖当前运行的脚本，所以可能下面会提示一些报错，无视即可)" && exit 0
 }
@@ -1783,12 +1783,12 @@ Update_Shell(){
 menu_status(){
 	if [[ -e ${ssr_folder} ]]; then
 		check_pid
-		if [[ ! -z "${PID}" ]]; then
+		if [[  -n "${PID}" ]]; then
 			echo -e " 当前状态: ${Green_font_prefix}已安装${Font_color_suffix} 并 ${Green_font_prefix}已启动${Font_color_suffix}"
 		else
 			echo -e " 当前状态: ${Green_font_prefix}已安装${Font_color_suffix} 但 ${Red_font_prefix}未启动${Font_color_suffix}"
 		fi
-		cd "${ssr_folder}"
+		cd "${ssr_folder}" || exit
 	else
 		echo -e " 当前状态: ${Red_font_prefix}未安装${Font_color_suffix}"
 	fi
@@ -1824,7 +1824,7 @@ else
  ${Green_font_prefix}15.${Font_color_suffix} 升级脚本
  "
 	menu_status
-	echo && read -e -p "请输入数字 [1-15]：" num
+	echo && read -erp "请输入数字 [1-15]：" num
 case "$num" in
 	1)
 	Install_SSR
