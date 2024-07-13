@@ -444,7 +444,7 @@ List_ServerStatus_server() {
 Add_ServerStatus_server() {
 	Set_config_server
 	Set_username_ch=$(cat ${server_conf} | grep '"username": "'"${username_s}"'"')
-	[[ ! -z "${Set_username_ch}" ]] && echo -e "${Error} 用户名已被使用 !" && exit 1
+	[[ -n "${Set_username_ch}" ]] && echo -e "${Error} 用户名已被使用 !" && exit 1
 	sed -i '3i\  },' ${server_conf}
 	sed -i '3i\   "disabled": false' ${server_conf}
 	sed -i '3i\   "location": "'"${location_s}"'",' ${server_conf}
